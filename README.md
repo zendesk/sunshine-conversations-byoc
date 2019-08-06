@@ -45,6 +45,8 @@ With resources:
 * Create an app and note the `appId` _(and add to AWS SSM, as below)_
 * In the app's settings, create a Key/secret pair _(and add to AWS SSM, as below)_
 * create a `webhook` integration (via UI or API)
+ * with trigger: `message:appMaker`
+ * with target: `outbounnd`/`businessMessage` endpoint URL _(from `sls info`)_
  * _The webhook should be set to `includeFullAppUser` by default_
 ## SSM Credentials
 * `aws ssm put-parameter --name smoochAppId --type String --value <<appId>>`
