@@ -1,0 +1,2 @@
+smooch==5.16.0
+requests==2.22.0
