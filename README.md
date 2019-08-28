@@ -1,3 +1,7 @@
+# Purpose
+
+This sample project shows how to add an unsupported user channel to Smooch. The channel used in the example is Slack. This example feeds DM messages sent to a bot user into Smooch.
+
 # Deploying to AWS Lambda via Serverless
 
 ## Serverless quickstart
