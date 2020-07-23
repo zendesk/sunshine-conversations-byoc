@@ -1,8 +1,31 @@
 # Purpose
 
-This sample project shows how to add an unsupported user channel to Smooch. The channel used in the example is Slack. This example feeds DM messages sent to a bot user into Smooch.
+This sample project shows how to add messages from an unsupported user channel to a Sunshine Conversation. The channel used in the example is Slack: DM messages sent to a bot user are fed into a SunshineConversation on behalf of the Slack user.
 
-# Deploying to AWS Lambda via Serverless
+## Archtecture
+
+* A Slack app is created which:
+    * Adds a `bot` user to Slack
+    * Sends webhook events to a middleware URL (for each new DM received)
+* A Sunshine Conversations app with:
+    * A webhook integration to send `message:appUser` events to a middleware URL
+    * Any compatible business system (i.e.: Agent UI/etc.)
+
+### Messaging flow
+
+For User messages:
+
+* a DM is sent to the `bot` user
+* the Slack app sends the message (in a webhook event) to the middleware URL
+* Middleware uses the Sunshine Conversations API to push a message with role:appUser into the corresponding appUser's conversation
+
+For replies from the business:
+
+* Business adds a message to an appUser's Sunshine Conversation
+* Sunshine Conversations sends a `message:appUser` webhook to the middleware URL
+* Middleware uses the Slack API to post a reply DM to the corresponding Slack user
+
+# Deploying the middleware to AWS Lambda via Serverless
 
 ## Serverless quickstart
 https://medium.com/devopslinks/aws-lambda-serverless-framework-python-part-1-a-step-by-step-hello-world-4182202aba4a
@@ -15,12 +38,6 @@ https://medium.com/devopslinks/aws-lambda-serverless-framework-python-part-1-a-s
 3. Python3 (+ pip3)
     1. Python3 dependencies: `pip3 install smooch`
 4. External system to send webhooks
-
-## Push environment variables to AWS (SSM)
-Use the command `aws ssm put-parameter --name supermanToken --type String --value mySupermanToken`
-* connectCampaignIds
-NOTE: Serverless will raise a warning if keys are specified (serverless.yml) but not found in the AWS SSM/environment
-NOTE: _connectCampaignIds_ can contain a comma-separated list of authorised CampaignIds
 
 ## Clone code
 Clone this project
@@ -43,7 +60,11 @@ With resources:
  * Subscribe to Bot Events: [ im_created, message.im ]
 * Permissions       _(Note the `Bot User OAuth Access Token` and add to AWS SSM, as below)_
 ## SSM Credentials
+Use the command below, filling in the appropriate values from your app, to store this credential in AWS System Manager
+
 * `aws ssm put-parameter --name slackBotAccessToken --type String --value <<Bot User OAuth Access Token>>`
+
+**NOTE:** Serverless will raise a warning if keys are specified (serverless.yml) but not found in the AWS SSM/environment
 
 # Smooch App Config
 * Create an app and note the `appId` _(and add to AWS SSM, as below)_
@@ -53,9 +74,13 @@ With resources:
  * with target: `outbounnd`/`businessMessage` endpoint URL _(from `sls info`)_
  * _The webhook should be set to `includeFullAppUser` by default_
 ## SSM Credentials
+Use the commands below, filling in the appropriate values from your app, to store these credentials in AWS System Manager
+
 * `aws ssm put-parameter --name smoochAppId --type String --value <<appId>>`
 * `aws ssm put-parameter --name smoochAppKeyId --type String --value <<KeyId>>`
 * `aws ssm put-parameter --name smoochAppSecret --type String --value <<secret>>`
+
+**NOTE:** Serverless will raise a warning if keys are specified (serverless.yml) but not found in the AWS SSM/environment
 
 # Serverless tools used (Cheatsheet)
 ## Init new project
